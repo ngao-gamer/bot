@@ -9,7 +9,7 @@ import typing
 # ----------------------------------------------------------------------------------
 # THIẾT LẬP TOKEN BẰNG CÁCH LẤY TỪ BIẾN MÔI TRƯỜNG (CHO RENDER)
 # ----------------------------------------------------------------------------------
-BOT_TOKEN = os.environ.get('MTQyMjE1MDYwOTg4ODQ3NzE4NA.GDetWd.-1Li9dhDVdE1WCZnCQ4QY87PqdA9oiwyysQkrc') 
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
 # Lưu ý: Tôi đã đổi lại thành 'BOT_TOKEN' để nhất quán với hướng dẫn Render trước đây.
 # Nếu bạn dùng 'DISCORD_TOKEN' trên Render, hãy sửa lại dòng trên thành: 
 # BOT_TOKEN = os.environ.get('DISCORD_TOKEN') 
