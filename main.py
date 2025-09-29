@@ -4,7 +4,7 @@ from discord import app_commands
 import asyncio
 import datetime
 import os
-import typing # Dùng cho Optional[str] để tránh cảnh báo None
+import typing 
 
 # ----------------------------------------------------------------------------------
 # THIẾT LẬP TOKEN BẰNG CÁCH LẤY TỪ BIẾN MÔI TRƯỜNG (CHO RENDER)
