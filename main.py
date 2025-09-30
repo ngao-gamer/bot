@@ -12,6 +12,10 @@ import typing
 BOT_TOKEN = os.environ.get('BOT_TOKEN') 
 # Đảm bảo Key bạn đặt trên Render là BOT_TOKEN
 
+if not BOT_TOKEN:
+    raise ValueError("❌ BOT_TOKEN environment variable is required! Bot will not start.")
+
+
 # Thiết lập Intents (BẮT BUỘC)
 intents = discord.Intents.default()
 intents.members = True
@@ -36,7 +40,57 @@ async def on_ready():
         print(f"❌ Lỗi khi đồng bộ lệnh: {e}")
 
 # ----------------------------------------------------------------------------------
-# CÁC LỆNH SLASH CHÍNH THỨC
+# CÁC LỆNH SLASH QUẢN LÝ MỚI (MUTE VÀ NICK)
+# ----------------------------------------------------------------------------------
+
+# Lệnh NICK: /nick member: @thành_viên name: tên_mới
+@tree.command(name="nick", description="Đổi biệt danh (nickname) của thành viên.")
+@app_commands.checks.has_permissions(manage_nicknames=True)
+async def nick_slash(interaction: discord.Interaction, member: discord.Member, name: str):
+    try:
+        old_nick = member.display_name
+        await member.edit(nick=name)
+        await interaction.response.send_message(f'✅ Đã đổi biệt danh cho **{old_nick}** thành **{member.display_name}**.')
+    except discord.Forbidden:
+        await interaction.response.send_message(f"❌ Không thể đổi biệt danh cho **{member.display_name}**. Có thể bot thiếu quyền hoặc quyền của người này cao hơn bot.", ephemeral=True)
+    except Exception as e:
+        await interaction.response.send_message(f"❌ Lỗi: {str(e)}", ephemeral=True)
+
+# Lệnh MUTE (TIMEOUT): /mute member: @thành_viên duration_minutes: số_phút reason: lý_do
+@tree.command(name="mute", description="Cấm thành viên gửi tin nhắn trong một thời gian.")
+@app_commands.checks.has_permissions(moderate_members=True)
+@app_commands.describe(
+    duration_minutes="Thời gian mute (tính bằng phút). Tối đa 28 ngày (40320 phút).",
+    reason="Lý do mute."
+)
+async def mute_slash(interaction: discord.Interaction, member: discord.Member, duration_minutes: int, reason: typing.Optional[str] = None):
+    try:
+        if duration_minutes <= 0 or duration_minutes > 40320: # 40320 phút = 28 ngày (giới hạn của Discord)
+             await interaction.response.send_message("❌ Thời gian mute phải lớn hơn 0 và không quá 40320 phút (28 ngày).", ephemeral=True)
+             return
+
+        duration = datetime.timedelta(minutes=duration_minutes)
+        
+        # Kiểm tra vai trò
+        if member.top_role >= interaction.user.top_role or member.guild_permissions.administrator:
+            await interaction.response.send_message(f"❌ Không thể mute {member.display_name} vì vai trò của họ bằng hoặc cao hơn bạn, hoặc họ là Quản trị viên.", ephemeral=True)
+            return
+
+        await member.timeout(duration, reason=reason)
+        
+        await interaction.response.send_message(
+            f'✅ **{member.display_name}** đã bị **mute**.\n'
+            f'⏳ Thời gian: **{duration_minutes} phút**.\n'
+            f'📝 Lý do: {reason or "Không có"}',
+            ephemeral=False # Thông báo công khai
+        )
+    except discord.Forbidden:
+        await interaction.response.send_message("❌ Bot không có quyền `Moderate Members` (Quản lý thành viên) để thực hiện lệnh này.", ephemeral=True)
+    except Exception as e:
+        await interaction.response.send_message(f"❌ Lỗi: {str(e)}", ephemeral=True)
+
+# ----------------------------------------------------------------------------------
+# CÁC LỆNH SLASH QUẢN LÝ CŨ
 # ----------------------------------------------------------------------------------
 
 # Lệnh KICK: /kick member: @thành_viên reason: lý_do
@@ -102,8 +156,5 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 # KHỞI CHẠY BOT (CHO BACKGROUND WORKER)
 # ----------------------------------------------------------------------------------
 if __name__ == "__main__":
-    if BOT_TOKEN:
-        print("🚀 Starting Purium Bot for Render Worker...")
-        client.run(BOT_TOKEN)
-    else:
-        print("❌ LỖI: Không tìm thấy BOT_TOKEN. Vui lòng kiểm tra Biến môi trường trên Render.")
+    print("🚀 Starting Purium Bot for Render Worker...")
+    client.run(BOT_TOKEN)
