@@ -7,22 +7,18 @@ import os
 import typing 
 
 # ----------------------------------------------------------------------------------
-# THIẾT LẬP TOKEN BẰNG CÁCH LẤY TỪ BIẾN MÔI TRƯỜNG (CHO RENDER)
+# THIẾT LẬP TOKEN BẰNG CÁCH LẤY TỪ BIẾN MÔI TRƯỜNG (CHO RENDER WORKER)
 # ----------------------------------------------------------------------------------
-BOT_TOKEN = os.environ.get('BOT_TOKEN')
-# Lưu ý: Tôi đã đổi lại thành 'BOT_TOKEN' để nhất quán với hướng dẫn Render trước đây.
-# Nếu bạn dùng 'DISCORD_TOKEN' trên Render, hãy sửa lại dòng trên thành: 
-# BOT_TOKEN = os.environ.get('DISCORD_TOKEN') 
+BOT_TOKEN = os.environ.get('MTQyMjE1MDYwOTg4ODQ3NzE4NA.GlMJxz.DtzkL8j4JMqObiGgStgZm07j3yqA-hSCyEc_9g') 
+# Đảm bảo Key bạn đặt trên Render là BOT_TOKEN
 
 # Thiết lập Intents (BẮT BUỘC)
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 
-# Khởi tạo bot và Cây lệnh Slash (CHỈ MỘT LẦN DUY NHẤT VÀ ĐÚNG CÁCH)
+# Khởi tạo bot và Cây lệnh Slash
 client = commands.Bot(command_prefix='!', intents=intents) 
-# Lệnh này sử dụng cây lệnh Slash được TỰ ĐỘNG tạo ra bởi client,
-# KHẮC PHỤC lỗi ClientException:
 tree = client.tree 
 
 # ----------------------------------------------------------------------------------
@@ -37,10 +33,10 @@ async def on_ready():
         await client.change_presence(activity=discord.Game(name="Quản lý với Slash /"))
         print("✅ Bot đã sẵn sàng để nhận lệnh!")
     except Exception as e:
-        print(f"❌ Lỗi khi khởi tạo bot: {e}")
+        print(f"❌ Lỗi khi đồng bộ lệnh: {e}")
 
 # ----------------------------------------------------------------------------------
-# CÁC LỆNH SLASH CHÍNH THỨC (SLASH COMMANDS)
+# CÁC LỆNH SLASH CHÍNH THỨC
 # ----------------------------------------------------------------------------------
 
 # Lệnh KICK: /kick member: @thành_viên reason: lý_do
@@ -51,7 +47,6 @@ async def kick_slash(interaction: discord.Interaction, member: discord.Member, r
         if member.guild_permissions.administrator:
             await interaction.response.send_message(f"❌ Không thể kick {member.display_name} vì họ là Quản trị viên.", ephemeral=True)
             return
-
         await member.kick(reason=reason)
         await interaction.response.send_message(f'✅ {member.display_name} đã bị kick.\nLý do: {reason or "Không có"}')
     except Exception as e:
@@ -65,7 +60,6 @@ async def ban_slash(interaction: discord.Interaction, member: discord.Member, re
         if member.guild_permissions.administrator:
             await interaction.response.send_message(f"❌ Không thể ban {member.display_name} vì họ là Quản trị viên.", ephemeral=True)
             return
-
         await member.ban(reason=reason)
         await interaction.response.send_message(f'✅ {member.display_name} đã bị ban.\nLý do: {reason or "Không có"}')
     except Exception as e:
@@ -76,7 +70,6 @@ async def ban_slash(interaction: discord.Interaction, member: discord.Member, re
 @app_commands.checks.has_permissions(manage_messages=True)
 async def send_slash(interaction: discord.Interaction, channel: discord.TextChannel, title: str, content: str):
     try:
-        # Tạo Embed
         embed = discord.Embed(
             title=title,
             description=content,
@@ -85,7 +78,6 @@ async def send_slash(interaction: discord.Interaction, channel: discord.TextChan
         )
         embed.set_footer(text=f"Thông báo từ Mod: {interaction.user.display_name}", 
                         icon_url=interaction.user.display_avatar.url if interaction.user.display_avatar else None)
-
         await channel.send(embed=embed)
         await interaction.response.send_message(f"✅ Đã gửi thông báo đến {channel.mention}!", ephemeral=True)
     except Exception as e:
@@ -107,11 +99,11 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
         print(f"❌ Lỗi trong error handler: {e}")
 
 # ----------------------------------------------------------------------------------
-# KHỞI CHẠY BOT (Đã sửa lỗi None và không có Keep-Alive)
+# KHỞI CHẠY BOT (CHO BACKGROUND WORKER)
 # ----------------------------------------------------------------------------------
 if __name__ == "__main__":
     if BOT_TOKEN:
-        print("✅ Token found. Starting Discord bot...")
+        print("🚀 Starting Purium Bot for Render Worker...")
         client.run(BOT_TOKEN)
     else:
         print("❌ LỖI: Không tìm thấy BOT_TOKEN. Vui lòng kiểm tra Biến môi trường trên Render.")
