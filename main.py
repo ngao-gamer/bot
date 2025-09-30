@@ -9,7 +9,7 @@ import typing
 # ----------------------------------------------------------------------------------
 # THIẾT LẬP TOKEN BẰNG CÁCH LẤY TỪ BIẾN MÔI TRƯỜNG (CHO RENDER WORKER)
 # ----------------------------------------------------------------------------------
-BOT_TOKEN = os.environ.get('MTQyMjE1MDYwOTg4ODQ3NzE4NA.GlMJxz.DtzkL8j4JMqObiGgStgZm07j3yqA-hSCyEc_9g') 
+BOT_TOKEN = os.environ.get('BOT_TOKEN') 
 # Đảm bảo Key bạn đặt trên Render là BOT_TOKEN
 
 # Thiết lập Intents (BẮT BUỘC)
